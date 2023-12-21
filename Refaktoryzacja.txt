@@ -1,0 +1,48 @@
+
+----- Commit: refactoring: string as a name, [...] -----
+
+char m_strName[64]{ 0 };
+std::string m_name;
+
+sprintf_s(m_strName, "Shell Sort - %d sorting", m_h);
+m_name = "Shell Sort " + std::to_string(m_h) + "-sorting";
+
+Autor przerzucił się tu na wykorzystanie udogodnień z C++ zamiast korzystać z funkcjonalności C. choć char działał, tak w przypadku C++ można korzystać z wygodniejszego w użyciu std::string. Analogicznie należało podmienić np. funkcję tworzącą ciąg znaków na zwykłą konkatenację stringów.
+
+
+
+----- Commit: 64 bit, and int to size_t changes -----
+
+Autor podmienił wystąpienia int na size_t w przypadku m.in.:
+- getterów zwracających indeksy, zakresy;
+- rozmiarów tablic
+
+Choć autor nie musiał natrafić na błąd, tak jest to zalecana praktyka, gdyż size_t może przyjąć rozmiar większy niż np. unsigned int.
+
+Przypis: std::size_t is commonly used for array indexing and loop counting. Programs that use other types, such as unsigned int, for array indexing may fail on, e.g. 64-bit systems when the index exceeds UINT_MAX or if it relies on 32-bit modular arithmetic. 
+
+
+
+----- Commit: remove ViData interface [...] -----
+
+void CQuickSortAlgorithm::Init(CViData* vData) {
+	m_viArray = dynamic_cast <CViArray<float>*>(vData);
+
+void CQuickSortAlgorithm::Init(CViArray<float>* vData) {
+	m_viArray = vData;
+
+Autor pozbył się funkcji dynamic_cast (która mogłaby zwracać błędy krytyczne podczas działania programu, nie wyłapuje ona błędów tak jak static_cast już na etapie kompilacji). Zamiast tego zastosował zwykły konstruktor konwertujący (albo funkcję konwertującą?).
+
+
+
+----- Commit: 64 bit, and int to [...] -----
+
+const double fTempoDelta = 500.0;  // beats per minute (bpm)
+const int iElementsDelta = 10;
+const int iElementsMin = 20;
+
+constexpr double fTempoDelta = 500.0;  // beats per minute (bpm)
+constexpr size_t iElementsDelta = 10;
+constexpr size_t iElementsMin = 20;
+
+Autor oprócz wspomnianej wyżej zamiany int na size_t zastosował również funkcjonalność C++, jaką jest constexpr. Działa on tak samo jak const, jednakże podczas kompilacji podstawia w miejsca stałych używanych w kodzie dosłowne wartości liczbowe, co jest mini optymalizacją.
